@@ -211,18 +211,18 @@ class TaskServiceTest {
     @Test
     @DisplayName("Should list tasks by assigned user")
     @Description("Verifies that tasks are listed correctly when filtered by assigned user ID.")
-    void shouldListTasksByAssignTo() {
+    void shouldFindAll() {
         Task task = mockTask();
 
         Page<Task> taskPage = new PageImpl<>(List.of(task));
 
-        when(taskRepository.findByAssignedTo(1L, pageable)).thenReturn(taskPage);
+        when(taskRepository.findAll( pageable)).thenReturn(taskPage);
 
-        Page<Task> result = taskService.listTasksByAssignTo(1L, pageable);
+        Page<Task> result = taskService.findAll( pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
-        verify(taskRepository, times(1)).findByAssignedTo(1L, pageable);
+        verify(taskRepository, times(1)).findAll( pageable);
     }
 
     @Test
@@ -252,17 +252,17 @@ class TaskServiceTest {
     @Test
     @DisplayName("Should list tasks by status")
     @Description("Verifies that tasks are listed correctly when filtered by status.")
-    void shouldListTasksByStatus() {
+    void shouldFindAllByStatus() {
         Task task = mockTask();
         Page<Task> taskPage = new PageImpl<>(List.of(task));
 
-        when(taskRepository.listByStatus(StatusEnum.PENDING, 1L, pageable)).thenReturn(taskPage);
+        when(taskRepository.listByStatus(StatusEnum.PENDING, pageable)).thenReturn(taskPage);
 
-        Page<Task> result = taskService.listTasksByStatus(1L, StatusEnum.PENDING, pageable);
+        Page<Task> result = taskService.listTasksByStatus( StatusEnum.PENDING, pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
-        verify(taskRepository, times(1)).listByStatus(StatusEnum.PENDING, 1L, pageable);
+        verify(taskRepository, times(1)).listByStatus(StatusEnum.PENDING, pageable);
     }
 
     @Test

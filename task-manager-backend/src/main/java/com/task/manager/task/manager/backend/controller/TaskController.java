@@ -32,7 +32,6 @@ public class TaskController {
             summary = "Retrieve tasks assigned to a user",
             description = "Returns a paginated list of tasks assigned to the given user.",
             parameters = {
-                    @Parameter(name = "assignedTo", description = "ID of the user assigned to the tasks", required = true),
                     @Parameter(name = "pageable", hidden = true)
             },
             responses = {
@@ -40,10 +39,10 @@ public class TaskController {
                     @ApiResponse(responseCode = "400", description = "Invalid request parameters")
             }
     )
-    public ResponseEntity<Page<Task>> retrieveTasks(@RequestBody Long assignedTo,@PageableDefault(size = 10) Pageable pageable){
+    public ResponseEntity<Page<Task>> retrieveTasks(@PageableDefault(size = 10) Pageable pageable){
         try {
 
-            Page<Task> tasks = taskService.listTasksByAssignTo(assignedTo, pageable);
+            Page<Task> tasks = taskService.findAll(pageable);
 
             return ResponseEntity.ok(tasks);
         }catch (Exception e){
@@ -72,7 +71,6 @@ public class TaskController {
             description = "Retrieves a paginated list of tasks filtered by status and user ID.",
             parameters = {
                     @Parameter(name = "status", description = "Status of the task", required = true),
-                    @Parameter(name = "userId", description = "ID of the user who owns the tasks", required = true),
                     @Parameter(name = "pageable", hidden = true)
             },
             responses = {
@@ -80,9 +78,9 @@ public class TaskController {
                     @ApiResponse(responseCode = "400", description = "Invalid request parameters")
             }
     )
-    public ResponseEntity<Page<Task>> findTaskByStatus (@RequestParam StatusEnum status,@RequestBody Long userId,@PageableDefault(size = 10) Pageable pageable ){
+    public ResponseEntity<Page<Task>> findTaskByStatus (@RequestParam StatusEnum status,@PageableDefault(size = 10) Pageable pageable ){
         try {
-            return ResponseEntity.ok().body(taskService.listTasksByStatus(userId,status, pageable));
+            return ResponseEntity.ok().body(taskService.listTasksByStatus(status, pageable));
         }catch (Exception e){
            throw new RuntimeException(e.getMessage());
         }

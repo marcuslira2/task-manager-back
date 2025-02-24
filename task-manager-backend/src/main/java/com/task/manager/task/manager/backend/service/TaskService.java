@@ -28,16 +28,16 @@ public class TaskService {
         this.userRepository = userRepository;
     }
 
-    public Page<Task> listTasksByAssignTo (Long assignedTo, Pageable pageable){
-        return taskRepository.findByAssignedTo(assignedTo, pageable);
+    public Page<Task> findAll(Pageable pageable){
+        return taskRepository.findAll(pageable);
     }
 
     public Task findTaskById (Long taskId){
         return taskRepository.findById(taskId).orElseThrow(()-> new NoSuchElementException(TASK_NOT_FOUND));
     }
 
-    public Page<Task> listTasksByStatus(Long assignedTo, StatusEnum statusEnum, Pageable pageable){
-        return taskRepository.listByStatus(statusEnum,assignedTo,pageable);
+    public Page<Task> listTasksByStatus(StatusEnum statusEnum, Pageable pageable){
+        return taskRepository.listByStatus(statusEnum,pageable);
     }
 
     public Task create (@Valid NewTaskRecord taskRecord){
