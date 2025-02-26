@@ -28,5 +28,11 @@ Na pasta `config`, você encontrará:
     mvn spring-boot:run
     ```
 
-Agora o projeto estará rodando e pronto para uso! 🚀
+## Documentação dos Endpoints
+
+Para acessar a documentação dos endpoints via Swagger, utilize os seguintes links após iniciar o projeto:
+
+- **Swagger UI:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+- **OpenAPI JSON:** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
+
 
