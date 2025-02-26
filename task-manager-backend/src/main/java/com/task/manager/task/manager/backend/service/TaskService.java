@@ -28,16 +28,16 @@ public class TaskService {
         this.userRepository = userRepository;
     }
 
-    public Page<Task> findAll(Pageable pageable){
-        return taskRepository.findAll(pageable);
+    public Page<Task> listTasksByUserId(Long userId,Pageable pageable){
+        return taskRepository.findByUserId(userId,pageable);
     }
 
     public Task findTaskById (Long taskId){
         return taskRepository.findById(taskId).orElseThrow(()-> new NoSuchElementException(TASK_NOT_FOUND));
     }
 
-    public Page<Task> listTasksByStatus(StatusEnum statusEnum, Pageable pageable){
-        return taskRepository.listByStatus(statusEnum,pageable);
+    public Page<Task> listTasksByStatus(Long userId,StatusEnum statusEnum, Pageable pageable){
+        return taskRepository.findByStatus(userId,statusEnum,pageable);
     }
 
     public Task create (@Valid NewTaskRecord taskRecord){
@@ -60,8 +60,11 @@ public class TaskService {
     }
 
     public void updateTask (Long id, NewTaskRecord taskRecord){
-        validateTitle(taskRecord.title());
         Task task = findTaskById(id);
+        if (!task.getTitle().equals(taskRecord.title())
+        && !task.getAssignedTo().getId().equals(taskRecord.assignedTo())){
+            validateTitle(taskRecord.title());
+        }
 
         task.setTitle(taskRecord.title());
         task.setDeadLine(validateDeadLine(taskRecord.deadLine()));
@@ -74,14 +77,16 @@ public class TaskService {
 
     public void deleteTask (Long id){
         Task task = findTaskById(id);
-        taskRepository.deleteById(task.getId());
+        task.setDeleted(true);
+        taskRepository.save(task);
     }
 
-    public String validateTitle(String title){
-        if (title.isEmpty()){
-            throw new IllegalArgumentException("Task title already exists");
+    public String validateTitle(String title) {
+        if (title == null || title.trim().isEmpty()) {
+            throw new IllegalArgumentException("Task title cannot be empty");
         }
-        taskRepository.findByTitle(title)
+
+         taskRepository.findByTitle(title)
                 .ifPresent(task -> { throw new IllegalArgumentException("Task title already exists"); });
 
         return title;

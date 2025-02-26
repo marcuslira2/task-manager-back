@@ -21,7 +21,8 @@ public record NewTaskRecord(
         @NotNull(message = "Status cannot be null")
         StatusEnum status,
 
-        @Schema(description = "Deadline for the task", example = "2025-03-01T10:00:00Z")
+        @Schema(description = "The deadline for the task. Must be a future date, later than the current date and time.",
+                example = "2025-03-01T10:00:00Z")
         @NotNull(message = "Deadline cannot be null")
         Date deadLine,
 

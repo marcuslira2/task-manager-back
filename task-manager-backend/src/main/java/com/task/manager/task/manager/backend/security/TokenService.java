@@ -6,6 +6,7 @@ import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.task.manager.task.manager.backend.model.User;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -24,6 +25,7 @@ public class TokenService {
             return JWT.create()
                     .withIssuer("Task Manager API")
                     .withSubject(user.getUsername())
+                    .withClaim("userId",user.getId())
                     .withExpiresAt(loginTimeExpiration())
                     .sign(algorithm);
         } catch (JWTCreationException exception){
@@ -43,6 +45,11 @@ public class TokenService {
             throw new JWTVerificationException("Token JWT expired");
         }
 
+    }
+
+    public Long getAuthenticatedUserId() {
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return user.getId();
     }
 
     private Instant loginTimeExpiration(){

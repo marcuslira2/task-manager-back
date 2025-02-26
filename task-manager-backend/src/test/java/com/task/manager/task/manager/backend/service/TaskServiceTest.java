@@ -211,18 +211,19 @@ class TaskServiceTest {
     @Test
     @DisplayName("Should list tasks by assigned user")
     @Description("Verifies that tasks are listed correctly when filtered by assigned user ID.")
-    void shouldFindAll() {
+    void shouldListTasksByUserId() {
         Task task = mockTask();
+        User user = mockUser();
 
         Page<Task> taskPage = new PageImpl<>(List.of(task));
 
-        when(taskRepository.findAll( pageable)).thenReturn(taskPage);
+        when(taskRepository.findByUserId(user.getId(), pageable)).thenReturn(taskPage);
 
-        Page<Task> result = taskService.findAll( pageable);
+        Page<Task> result = taskService.listTasksByUserId(user.getId(), pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
-        verify(taskRepository, times(1)).findAll( pageable);
+        verify(taskRepository, times(1)).findByUserId(user.getId(), pageable);
     }
 
     @Test
@@ -252,17 +253,18 @@ class TaskServiceTest {
     @Test
     @DisplayName("Should list tasks by status")
     @Description("Verifies that tasks are listed correctly when filtered by status.")
-    void shouldFindAllByStatus() {
+    void shouldListTasksByUserIdByStatus() {
         Task task = mockTask();
+        User user = mockUser();
         Page<Task> taskPage = new PageImpl<>(List.of(task));
 
-        when(taskRepository.listByStatus(StatusEnum.PENDING, pageable)).thenReturn(taskPage);
+        when(taskRepository.findByStatus(user.getId(),StatusEnum.PENDING, pageable)).thenReturn(taskPage);
 
-        Page<Task> result = taskService.listTasksByStatus( StatusEnum.PENDING, pageable);
+        Page<Task> result = taskService.listTasksByStatus( user.getId(),StatusEnum.PENDING, pageable);
 
         assertNotNull(result);
         assertEquals(1, result.getTotalElements());
-        verify(taskRepository, times(1)).listByStatus(StatusEnum.PENDING, pageable);
+        verify(taskRepository, times(1)).findByStatus(user.getId(),StatusEnum.PENDING, pageable);
     }
 
     @Test
@@ -298,11 +300,13 @@ class TaskServiceTest {
         Date deadLine = mockDeadLine();
         Task existingTask = mockTaskValidate();
 
+        String conflictingTitle = "Título duplicado";
+
         Task duplicateTask = new Task();
-        duplicateTask.setTitle(existingTask.getTitle());
+        duplicateTask.setTitle(conflictingTitle);
 
         NewTaskRecord updatedTaskRecord = new NewTaskRecord(
-                existingTask.getTitle(),
+                conflictingTitle,
                 "Updated Task",
                 StatusEnum.COMPLETED,
                 deadLine,
@@ -310,12 +314,14 @@ class TaskServiceTest {
         );
 
         when(taskRepository.findById(2L)).thenReturn(Optional.of(existingTask));
-        when(taskRepository.findByTitle(existingTask.getTitle())).thenReturn(Optional.of(duplicateTask));
+        when(taskRepository.findByTitle(conflictingTitle)).thenReturn(Optional.of(duplicateTask));
 
         assertThrows(IllegalArgumentException.class, () -> taskService.updateTask(2L, updatedTaskRecord));
 
         verify(taskRepository, never()).save(any(Task.class));
     }
+
+
 
     @Test
     @DisplayName("Should delete task successfully")
@@ -327,7 +333,10 @@ class TaskServiceTest {
 
         taskService.deleteTask(1L);
 
-        verify(taskRepository, times(1)).deleteById(1L);
+        assertTrue(task.isDeleted());
+
+        verify(taskRepository, times(1)).save(task);
+        verify(taskRepository, never()).deleteById(anyLong());
     }
 
     @Test

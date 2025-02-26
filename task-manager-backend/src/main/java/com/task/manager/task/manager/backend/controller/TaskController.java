@@ -3,12 +3,14 @@ package com.task.manager.task.manager.backend.controller;
 import com.task.manager.task.manager.backend.model.NewTaskRecord;
 import com.task.manager.task.manager.backend.model.StatusEnum;
 import com.task.manager.task.manager.backend.model.Task;
+import com.task.manager.task.manager.backend.security.TokenService;
 import com.task.manager.task.manager.backend.service.TaskService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,29 +22,31 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/tasks")
 @Tag(name = "Task Management", description = "Endpoints for managing tasks")
+@SecurityRequirement(name = "BearerAuth")
 public class TaskController {
 
     private final TaskService taskService;
 
-    public TaskController(TaskService taskService) {
+    private final TokenService tokenService;
+
+    public TaskController(TaskService taskService, TokenService tokenService) {
         this.taskService = taskService;
+        this.tokenService = tokenService;
     }
     @GetMapping
     @Operation(
             summary = "Retrieve tasks assigned to a user",
             description = "Returns a paginated list of tasks assigned to the given user.",
-            parameters = {
-                    @Parameter(name = "pageable", hidden = true)
-            },
             responses = {
                     @ApiResponse(responseCode = "200", description = "Tasks retrieved successfully"),
-                    @ApiResponse(responseCode = "400", description = "Invalid request parameters")
+                    @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+                    @ApiResponse(responseCode = "403", description = "Invalid credentials or authentication failure")
             }
     )
     public ResponseEntity<Page<Task>> retrieveTasks(@PageableDefault(size = 10) Pageable pageable){
         try {
-
-            Page<Task> tasks = taskService.findAll(pageable);
+            Long userId = tokenService.getAuthenticatedUserId();
+            Page<Task> tasks = taskService.listTasksByUserId(userId,pageable);
 
             return ResponseEntity.ok(tasks);
         }catch (Exception e){
@@ -58,6 +62,7 @@ public class TaskController {
             parameters = @Parameter(name = "id", description = "Task ID", required = true),
             responses = {
                     @ApiResponse(responseCode = "200", description = "Task retrieved successfully"),
+                    @ApiResponse(responseCode = "403", description = "Invalid credentials or authentication failure"),
                     @ApiResponse(responseCode = "404", description = "Task not found")
             }
     )
@@ -65,7 +70,7 @@ public class TaskController {
         return ResponseEntity.ok().body(taskService.findTaskById(id));
     }
 
-    @GetMapping("/tasks/filter")
+    @GetMapping("/filter")
     @Operation(
             summary = "Find tasks by status",
             description = "Retrieves a paginated list of tasks filtered by status and user ID.",
@@ -75,12 +80,15 @@ public class TaskController {
             },
             responses = {
                     @ApiResponse(responseCode = "200", description = "Filtered tasks retrieved successfully"),
-                    @ApiResponse(responseCode = "400", description = "Invalid request parameters")
+                    @ApiResponse(responseCode = "400", description = "Invalid request parameters"),
+                    @ApiResponse(responseCode = "403", description = "Invalid credentials or authentication failure")
+
             }
     )
     public ResponseEntity<Page<Task>> findTaskByStatus (@RequestParam StatusEnum status,@PageableDefault(size = 10) Pageable pageable ){
         try {
-            return ResponseEntity.ok().body(taskService.listTasksByStatus(status, pageable));
+            Long userId = tokenService.getAuthenticatedUserId();
+            return ResponseEntity.ok().body(taskService.listTasksByStatus(userId,status, pageable));
         }catch (Exception e){
            throw new RuntimeException(e.getMessage());
         }
@@ -99,7 +107,8 @@ public class TaskController {
             responses = {
                     @ApiResponse(responseCode = "201", description = "Task created successfully"),
                     @ApiResponse(responseCode = "400", description = "Invalid input data"),
-                    @ApiResponse(responseCode = "403", description = "Title already exists")
+                    @ApiResponse(responseCode = "403", description = "Invalid credentials or authentication failure")
+
             }
     )
     public ResponseEntity<String> createTask (@RequestBody NewTaskRecord taskRecord){
@@ -126,6 +135,7 @@ public class TaskController {
             responses = {
                     @ApiResponse(responseCode = "202", description = "Task updated successfully"),
                     @ApiResponse(responseCode = "400", description = "Invalid input data"),
+                    @ApiResponse(responseCode = "403", description = "Invalid credentials or authentication failure"),
                     @ApiResponse(responseCode = "404", description = "Task not found")
             }
     )
@@ -148,6 +158,7 @@ public class TaskController {
             responses = {
                     @ApiResponse(responseCode = "202", description = "Task deleted successfully"),
                     @ApiResponse(responseCode = "400", description = "Invalid task ID"),
+                    @ApiResponse(responseCode = "403", description = "Invalid credentials or authentication failure"),
                     @ApiResponse(responseCode = "404", description = "Task not found")
             }
     )

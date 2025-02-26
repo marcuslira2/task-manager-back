@@ -31,6 +31,9 @@ public class Task {
     @JoinColumn(name = "user_id", nullable = false)
     private User assignedTo;
 
+    @Column(name = "deleted",nullable = false)
+    private boolean deleted;
+
     public Long getId() {
         return id;
     }
@@ -85,5 +88,13 @@ public class Task {
 
     public void setAssignedTo(User assignedTo) {
         this.assignedTo = assignedTo;
+    }
+
+    public boolean isDeleted() {
+        return deleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
     }
 }
