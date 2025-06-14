@@ -7,6 +7,8 @@ on:
       - '*'
 #  pull_request:
 ##    branches: [ "main" ]
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -95,4 +97,4 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          files: task-manager-backend/target/*.war
+          files: task-manager-backend/target/*.jar
