@@ -2,29 +2,31 @@ name: Continuous Integration + Release + .jar
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+#    branches: [ "main" ]
+    tags:
+      - '*'
+#  pull_request:
+##    branches: [ "main" ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: mydb
-          MYSQL_USER: user
-          MYSQL_PASSWORD: password
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping --silent"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=5
+#    services:
+#      mysql:
+#        image: mysql:8.0
+#        env:
+#          MYSQL_ROOT_PASSWORD: root
+#          MYSQL_DATABASE: mydb
+#          MYSQL_USER: user
+#          MYSQL_PASSWORD: password
+#        ports:
+#          - 3306:3306
+#        options: >-
+#          --health-cmd="mysqladmin ping --silent"
+#          --health-interval=10s
+#          --health-timeout=5s
+#          --health-retries=5
 
     steps:
       - uses: actions/checkout@v4
@@ -60,38 +62,39 @@ jobs:
 #        with:
 #          working-directory: task-manager-backend
 
-      - name: Automatic tag creation
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        id: tag_version
-        working-directory: task-manager-backend
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
-          
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          echo "Version detected: $VERSION"
-          TAG_NAME="v$VERSION"
-          
-          if git ls-remote --tags origin | grep "refs/tags/$TAG_NAME$"; then
-            echo "Tag $TAG_NAME already exists. Ignoring creation."
-            echo "TAG_NAME=" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          
-          # Token Configuration
-          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/marcuslira2/task-manager-back.git
-          
-          git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
-          git push origin "$TAG_NAME"
-          
-          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
+#      - name: Automatic tag creation
+#        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+#        id: tag_version
+#        working-directory: task-manager-backend
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        run: |
+#          git config user.name "${{ github.actor }}"
+#          git config user.email "${{ github.actor }}@users.noreply.github.com"
+#
+#          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+#          echo "Version detected: $VERSION"
+#          TAG_NAME="v$VERSION"
+#
+#          if git ls-remote --tags origin | grep "refs/tags/$TAG_NAME$"; then
+#            echo "Tag $TAG_NAME already exists. Ignoring creation."
+#            echo "TAG_NAME=" >> $GITHUB_OUTPUT
+#            exit 0
+#          fi
+#
+#          # Token Configuration
+#          git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/marcuslira2/task-manager-back.git
+#
+#          git tag -a "$TAG_NAME" -m "Release $TAG_NAME"
+#          git push origin "$TAG_NAME"
+#
+#          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
 
       - name: Publish release with artifact
         if: steps.tag_version.outputs.TAG_NAME != ''
         uses: softprops/action-gh-release@v1
         with:
+          working-directory: task-manager-backend
           tag_name: ${{ steps.tag_version.outputs.TAG_NAME }}
           name: Release ${{ steps.tag_version.outputs.TAG_NAME }}
           files: task-manager-backend/target/*.jar
