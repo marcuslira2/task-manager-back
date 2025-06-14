@@ -48,7 +48,7 @@ jobs:
           done
 
       - name: Build project without tests
-#        working-directory: task-manager-backend
+        working-directory: task-manager-backend
         run: mvn clean install -DskipTests
 
 #      - name: Build and Test with Maven
@@ -61,7 +61,7 @@ jobs:
       - name: Automatic tag creation
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         id: tag_version
-#        working-directory: task-manager-backend
+        working-directory: task-manager-backend
         run: |
           VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "Version detected: $VERSION"
