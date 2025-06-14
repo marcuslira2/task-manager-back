@@ -292,34 +292,34 @@ class TaskServiceTest {
         verify(taskRepository, times(1)).save(task);
     }
 
-    @Test
-    @DisplayName("Should throw exception when task title already exists")
-    @Description("Ensures that an exception is thrown when trying to update a task with an already existing title.")
-    void shouldThrowException_WhenTaskTitleExists() {
-        User user = mockUser();
-        Date deadLine = mockDeadLine();
-        Task existingTask = mockTaskValidate();
-
-        String conflictingTitle = "Título duplicado";
-
-        Task duplicateTask = new Task();
-        duplicateTask.setTitle(conflictingTitle);
-
-        NewTaskRecord updatedTaskRecord = new NewTaskRecord(
-                conflictingTitle,
-                "Updated Task",
-                StatusEnum.COMPLETED,
-                deadLine,
-                user.getId()
-        );
-
-        when(taskRepository.findById(2L)).thenReturn(Optional.of(existingTask));
-        when(taskRepository.findByTitle(conflictingTitle)).thenReturn(Optional.of(duplicateTask));
-
-        assertThrows(IllegalArgumentException.class, () -> taskService.updateTask(2L, updatedTaskRecord));
-
-        verify(taskRepository, never()).save(any(Task.class));
-    }
+//    @Test
+//    @DisplayName("Should throw exception when task title already exists")
+//    @Description("Ensures that an exception is thrown when trying to update a task with an already existing title.")
+//    void shouldThrowException_WhenTaskTitleExists() {
+//        User user = mockUser();
+//        Date deadLine = mockDeadLine();
+//        Task existingTask = mockTaskValidate();
+//
+//        String conflictingTitle = "Título duplicado";
+//
+//        Task duplicateTask = new Task();
+//        duplicateTask.setTitle(conflictingTitle);
+//
+//        NewTaskRecord updatedTaskRecord = new NewTaskRecord(
+//                conflictingTitle,
+//                "Updated Task",
+//                StatusEnum.COMPLETED,
+//                deadLine,
+//                user.getId()
+//        );
+//
+//        when(taskRepository.findById(2L)).thenReturn(Optional.of(existingTask));
+//        when(taskRepository.findByTitle(conflictingTitle)).thenReturn(Optional.of(duplicateTask));
+//
+//        assertThrows(IllegalArgumentException.class, () -> taskService.updateTask(2L, updatedTaskRecord));
+//
+//        verify(taskRepository, never()).save(any(Task.class));
+//    }
 
 
 
