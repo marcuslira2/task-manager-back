@@ -39,6 +39,7 @@ public class AuthController {
             responses = {
                     @ApiResponse(responseCode = "200", description = "Successful authentication, returns JWT token"),
                     @ApiResponse(responseCode = "400", description = "Invalid credentials or authentication failure")
+                    
             }
     )
     public ResponseEntity<String> login(@RequestBody LoginRecord dto) {
