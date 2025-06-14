@@ -38,16 +38,16 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Wait for MySQL to be ready
-        run: |
-          for i in {1..30}; do
-          if mysqladmin ping -h127.0.0.1 -uroot -proot --silent; then
-            echo "MySQL is up!"
-            break
-          fi
-          echo "Waiting for MySQL..."
-          sleep 2
-          done
+#      - name: Wait for MySQL to be ready
+#        run: |
+#          for i in {1..30}; do
+#          if mysqladmin ping -h127.0.0.1 -uroot -proot --silent; then
+#            echo "MySQL is up!"
+#            break
+#          fi
+#          echo "Waiting for MySQL..."
+#          sleep 2
+#          done
 
 #      - name: Build project without tests
 #        working-directory: task-manager-backend
@@ -91,10 +91,8 @@ jobs:
 #          echo "TAG_NAME=$TAG_NAME" >> $GITHUB_OUTPUT
 
       - name: Publish release with artifact
-        if: steps.tag_version.outputs.TAG_NAME != ''
         uses: softprops/action-gh-release@v1
         with:
-          working-directory: task-manager-backend
-          tag_name: ${{ steps.tag_version.outputs.TAG_NAME }}
-          name: Release ${{ steps.tag_version.outputs.TAG_NAME }}
-          files: task-manager-backend/target/*.jar
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          files: task-manager-backend/target/*.war
