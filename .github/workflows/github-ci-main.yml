@@ -48,7 +48,7 @@ jobs:
           done
 
       - name: Build project without tests
-        working-directory: task-manager-backend
+#        working-directory: task-manager-backend
         run: mvn clean install -DskipTests
 
 #      - name: Build and Test with Maven
